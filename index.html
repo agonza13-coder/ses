@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Expresar gustos y preferencias: preferir y disgustar</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #4a47a3;
+    --secondary-color: #5856b3;
+    --accent-color: #9157c2;
+    --background-color: #f6f5f7;
+    --text-color: #333;
+    --correct-color: #2ecc71;
+    --incorrect-color: #e74c3c;
+    --white-color: #fff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; overflow: hidden;
+    background-image: url('background.png');
+    background-size: cover; background-position: center;
+}
+#slide-container {
+    width: 90vw; height: 90vh; position: relative;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-radius: 20px; overflow: hidden;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+}
+.slide {
+    width: 100%; height: 100%; padding: 60px 80px;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; position: absolute; font-size: 2rem;
+}
+.slide.active { display: flex; }
+.slide h1 { font-size: 4.4rem; color: var(--primary-color); margin-bottom: 20px; }
+.slide h2 { font-size: 3.2rem; color: var(--secondary-color); margin-bottom: 28px; }
+.slide p, .slide li { font-size: 2.1rem; line-height: 1.5; }
+.objective { border-left: 5px solid var(--accent-color); padding-left: 20px; }
+
+.activity-list { list-style: none; text-align: left; }
+.activity-list li { margin-bottom: 14px; }
+
+#navigation {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 20px;
+}
+#navigation button {
+    font-size: 2rem; padding: 10px 20px; border: none;
+    background-color: var(--primary-color); color: var(--white-color);
+    border-radius: 10px; cursor: pointer; transition: background-color 0.3s;
+}
+#navigation button:hover { background-color: var(--secondary-color); }
+
+#timer {
+    position: fixed; top: 20px; right: 40px; font-size: 2.5rem; font-weight: bold;
+    color: var(--primary-color); background-color: rgba(255,255,255,0.85);
+    padding: 10px 20px; border-radius: 10px; cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Concept grid */
+.interactive-grid { display: flex; flex-direction: column; gap: 34px; width: 92%; margin-top: 10px; }
+.grid-row { display: flex; justify-content: space-around; gap: 24px; }
+.cycle-box, .toggle-box {
+    border-radius: 15px; cursor: pointer; transition: all 0.25s ease; flex: 1; text-align: center;
+    display: flex; justify-content: center; align-items: center; min-height: 110px; padding: 22px;
+    font-weight: 700;
+}
+.cycle-box {
+    background-color: var(--white-color); border: 4px solid var(--secondary-color);
+    font-size: 2.1rem; color: var(--primary-color);
+}
+.cycle-box:hover { background-color: #f0f0f0; }
+.toggle-box {
+    background-color: var(--primary-color); color: var(--white-color);
+    font-size: 2.3rem;
+}
+.toggle-box:hover { transform: scale(1.04); }
+.toggle-box.toggled { background-color: var(--accent-color); font-size: 2rem; }
+
+/* CFU1 (tap-to-choose) */
+.cfu1-container { display: flex; flex-direction: column; gap: 18px; }
+.cfu1-container .sentence-container { display: flex; align-items: center; gap: 16px; }
+.pronoun-box {
+    display: inline-block; width: 120px; height: 56px; background-color: var(--accent-color);
+    border-radius: 8px; cursor: pointer; color: var(--white-color);
+    line-height: 56px; text-align: center; font-weight: bold; font-size: 2.1rem; vertical-align: middle;
+}
+.pronoun-choices {
+    position: absolute; background-color: var(--white-color); border: 1px solid #ccc;
+    border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 10;
+}
+.pronoun-choices .choice { padding: 14px 24px; cursor: pointer; color: var(--primary-color); font-size: 1.9rem; font-weight: bold; }
+.pronoun-choices .choice:hover { background-color: #f0f0f0; }
+.check-btn {
+    padding: 10px 20px; font-size: 1.5rem; border: none; background-color: var(--secondary-color);
+    color: white; border-radius: 8px; cursor: pointer; transition: background-color 0.3s;
+}
+.check-btn:hover { background-color: var(--primary-color); }
+.check-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+/* CFU2 (match) */
+.cfu2-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.cfu2-container .instructions { font-size: 1.8rem; margin-bottom: 16px; }
+.cfu2-choices { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; justify-content: center; }
+.cfu2-choice {
+    padding: 14px 18px; background-color: #fff; border: 2px solid var(--accent-color);
+    border-radius: 10px; cursor: pointer; font-size: 1.8rem; transition: all 0.2s ease;
+}
+.cfu2-choice.selected { background-color: var(--accent-color); color: var(--white-color); transform: scale(1.04); }
+.cfu2-sentences { display: flex; flex-direction: column; gap: 12px; width: 90%; max-width: 900px; }
+.cfu2-sentence { cursor: pointer; padding: 10px; border-radius: 8px; transition: background-color 0.2s; border: 1px dashed var(--secondary-color); }
+.cfu2-sentence.selected { background-color: var(--secondary-color); color: var(--white-color); }
+.cfu2-sentence.disabled, .cfu2-choice.disabled { opacity: 0.55; pointer-events: none; }
+
+/* Activity 3 (carousel MCQ) */
+.activity3-carousel-container {
+    width: 100%; height: calc(100% - 150px); position: relative; display: flex; justify-content: center; align-items: center;
+}
+.activity3-page { display: none; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 26px 36px; width: 100%; height: 100%; padding: 0 10px; }
+.activity3-page.active-page { display: grid; }
+.activity3-page .question { width: 100%; text-align: left; }
+.activity3-page .question p { font-size: 2rem; margin-bottom: 10px; }
+.activity3-page .options { list-style-type: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; }
+.activity3-page .options li {
+    font-size: 1.6rem; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;
+    border: 2px solid var(--secondary-color); background-color: #fff; text-align: center; white-space: nowrap;
+}
+.activity3-page .options li:hover { background-color: #f0f0f0; }
+.activity3-page .options li span { font-weight: bold; margin-right: 8px; color: var(--accent-color); }
+.activity3-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background-color: var(--primary-color); color: white; border: none; border-radius: 50%;
+    width: 60px; height: 60px; font-size: 2rem; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10;
+}
+.activity3-nav.prev { left: -30px; }
+.activity3-nav.next { right: -30px; }
+.activity3-nav:hover { background-color: var(--secondary-color); }
+.highlight { font-weight: bold; color: var(--accent-color); background-color: rgba(145, 87, 194, 0.1); padding: 2px 8px; border-radius: 5px; }
+
+/* Exit ticket */
+.exit-ticket-box {
+    background-color: rgba(255, 255, 255, 0.7); border: 3px dashed var(--accent-color);
+    padding: 34px; border-radius: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; width: 82%;
+}
+.exit-ticket-box p { font-size: 2rem; }
+
+.correct { background-color: var(--correct-color) !important; color: white !important; }
+.incorrect { background-color: var(--incorrect-color) !important; color: white !important; }
+    </style>
+</head>
+<body>
+    <div id="slide-container">
+        <!-- Slide 1 -->
+        <div class="slide active" data-duration="0">
+            <h1>Gustos y preferencias: preferir & disgustar</h1>
+            <div class="objective">
+                <h2>Objetivo:</h2>
+                <p>Puedo usar otros verbos como <strong>preferir</strong> y <strong>disgustar</strong> para expresar <strong>gustos</strong> y <strong>disgustos</strong>.</p>
+            </div>
+        </div>
+
+        <!-- Concept meanings & examples -->
+        <div class="slide" data-duration="0">
+            <h2>¿Cómo se usan?</h2>
+            <div class="interactive-grid">
+                <div class="grid-row">
+                    <div class="cycle-box" data-state="0" data-texts='[
+                        "preferir",
+                        "Significa: elegir/querer más → preferir + sustantivo/infinitivo",
+                        "Presente (e→ie): yo prefiero, tú prefieres, él/ella/usted prefiere, nosotros preferimos, ellos/ustedes prefieren"
+                    ]'></div>
+                    <div class="cycle-box" data-state="0" data-texts='[
+                        "disgustar",
+                        "Significa: no gustar/causar molestia → A + persona + (pronombre) + disgusta(n)",
+                        "Concordancia: disgusta (singular o infinitivo) / disgustan (plural)"
+                    ]'></div>
+                    <div class="cycle-box" data-state="0" data-texts='[
+                        "Pronombres de interés",
+                        "me, te, le, nos, les (con A + mí/ti/él/ella/usted/nosotros/ellos/ustedes)",
+                        "Ej.: A mí me disgusta el ruido. / A ellos les disgustan las mentiras."
+                    ]'></div>
+                </div>
+                <div class="grid-row">
+                    <div class="toggle-box" data-initial="Toca para ver ejemplos de preferir" data-toggled="Prefiero leer. / ¿Prefieres té o café? / Ella prefiere estudiar en la mañana."></div>
+                    <div class="toggle-box" data-initial="Toca para ver ejemplos de disgustar" data-toggled="A mí me disgusta el ruido. / A ellos les disgustan las excusas. / ¿A ti te disgusta esperar?"></div>
+                    <div class="toggle-box" data-initial="Toca para ver estructura A + pronombre" data-toggled="A mí me..., A ti te..., A él/ella/usted le..., A nosotros nos..., A ellos/ustedes les..."></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity 1: write the correct form -->
+        <div class="slide" data-duration="480">
+            <h2>Actividad 1: escribe la forma correcta</h2>
+            <ul class="activity-list">
+                <li>1. Yo <strong>___</strong> comer en casa. (prefiero/prefieres)</li>
+                <li>2. ¿Tú <strong>___</strong> la pizza o la pasta? (prefieres/preferimos)</li>
+                <li>3. A mí <strong>___</strong> el ruido. (me disgusta/me disgustan)</li>
+                <li>4. A ellos <strong>___</strong> las películas largas. (les disgusta/les disgustan)</li>
+                <li>5. Mi hermana <strong>___</strong> estudiar por la mañana. (prefiere/preferimos)</li>
+                <li>6. A nosotros <strong>___</strong> esperar tanto. (nos disgusta/nos disgustan)</li>
+                <li>7. ¿Ustedes <strong>___</strong> salir hoy o mañana? (prefieren/preferimos)</li>
+                <li>8. A ti <strong>___</strong> los insectos. (te disgusta/te disgustan)</li>
+                <li>9. Yo <strong>___</strong> leer antes de dormir. (prefiero/prefiere)</li>
+                <li>10. A Juan <strong>___</strong> el queso. (le disgusta/le disgustan)</li>
+            </ul>
+            <p style="font-size:1.6rem;color:#666;margin-top:8px;">(Escribe mentalmente o en tu cuaderno; corregiremos en el CFU.)</p>
+        </div>
+
+        <!-- CFU 1: click the blank to choose (dynamic options per item) -->
+        <div class="slide" data-duration="360">
+            <h2>Check for Understanding (CFU 1)</h2>
+            <div class="cfu1-container">
+                <div class="sentence-container">
+                    <p>1. Yo <span class="pronoun-box" data-answer="prefiero" data-options='["prefiero","prefieres"]'>_____</span> ir al cine hoy.</p>
+                    <button class="check-btn">Check</button>
+                </div>
+                <div class="sentence-container">
+                    <p>2. A mí <span class="pronoun-box" data-answer="me disgustan" data-options='["me disgusta","me disgustan"]'>_____</span> las mentiras.</p>
+                    <button class="check-btn">Check</button>
+                </div>
+                <div class="sentence-container">
+                    <p>3. Ella <span class="pronoun-box" data-answer="prefiere" data-options='["prefiere","prefieren"]'>_____</span> la clase de arte.</p>
+                    <button class="check-btn">Check</button>
+                </div>
+                <div class="sentence-container">
+                    <p>4. A nosotros <span class="pronoun-box" data-answer="nos disgusta" data-options='["nos disgusta","nos disgustan"]'>_____</span> esperar tanto tiempo.</p>
+                    <button class="check-btn">Check</button>
+                </div>
+                <div class="sentence-container">
+                    <p>5. A ellos <span class="pronoun-box" data-answer="les disgusta" data-options='["les disgusta","les disgustan"]'>_____</span> el café.</p>
+                    <button class="check-btn">Check</button>
+                </div>
+            </div>
+            <div class="pronoun-choices" style="display: none;"></div>
+        </div>
+
+        <!-- Activity 2: meaning identification -->
+        <div class="slide" data-duration="420">
+            <h2>Actividad 2: elige el significado</h2>
+            <p class="instructions">Haz clic en la opción correcta según la palabra o frase destacada.</p>
+            <div class="activity3-carousel-container" style="height:auto;">
+                <div class="activity3-page active-page" style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+                    <div class="question">
+                        <p>1. <span class="highlight">me disgusta</span></p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> I dislike / it bothers me</li>
+                            <li><span>b.</span> I like</li>
+                            <li><span>c.</span> he prefers</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>2. <span class="highlight">prefiere</span></p>
+                        <ul class="options">
+                            <li><span>a.</span> you (plural) prefer</li>
+                            <li data-correct="true"><span>b.</span> he/she/usted prefers</li>
+                            <li><span>c.</span> I prefer</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>3. <span class="highlight">les disgustan</span></p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> they/you all dislike (plural things)</li>
+                            <li><span>b.</span> we dislike (one thing)</li>
+                            <li><span>c.</span> you (sing.) dislike (one thing)</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>4. <span class="highlight">preferimos</span></p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> we prefer</li>
+                            <li><span>b.</span> they prefer</li>
+                            <li><span>c.</span> we like</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size:1.6rem;color:#666;margin-top:8px;">(Feedback visual al tocar: verde = correcto, rojo = incorrecto)</p>
+        </div>
+
+        <!-- CFU 2: match sentence to correct form -->
+        <div class="slide" data-duration="360">
+            <h2>Check for Understanding (CFU 2)</h2>
+            <div class="cfu2-container">
+                <p class="instructions">Selecciona una oración y luego elige la forma correcta.</p>
+                <div class="cfu2-choices">
+                    <div class="cfu2-choice" data-answer="prefiero">prefiero</div>
+                    <div class="cfu2-choice" data-answer="les disgustan">les disgustan</div>
+                    <div class="cfu2-choice" data-answer="prefiere">prefiere</div>
+                    <div class="cfu2-choice" data-answer="nos disgusta">nos disgusta</div>
+                    <div class="cfu2-choice" data-answer="preferimos">preferimos</div>
+                    <div class="cfu2-choice" data-answer="me disgusta">me disgusta</div>
+                </div>
+                <div class="cfu2-sentences">
+                    <div class="cfu2-sentence" data-answer="prefiero">1) Yo ___ el té sin azúcar.</div>
+                    <div class="cfu2-sentence" data-answer="les disgustan">2) A Miguel y Ana ___ las tareas largas.</div>
+                    <div class="cfu2-sentence" data-answer="prefiere">3) Ella ___ trabajar en equipo.</div>
+                    <div class="cfu2-sentence" data-answer="nos disgusta">4) A nosotros ___ llegar tarde.</div>
+                    <div class="cfu2-sentence" data-answer="preferimos">5) Nosotros ___ sentarnos aquí.</div>
+                    <div class="cfu2-sentence" data-answer="me disgusta">6) A mí ___ el olor a humo.</div>
+                </div>
+                <button id="cfu2-check-btn" class="check-btn" disabled>Check</button>
+            </div>
+        </div>
+
+        <!-- Activity 3: multiple choice carousel -->
+        <div class="slide" data-duration="420">
+            <h2>Actividad 3</h2>
+            <p class="instructions">Elige la opción que completa correctamente la oración.</p>
+            <div class="activity3-carousel-container">
+                <div class="activity3-page active-page">
+                    <div class="question">
+                        <p>1. A ti ___ los gatos?</p>
+                        <ul class="options">
+                            <li><span>a.</span> te disgusta</li>
+                            <li data-correct="true"><span>b.</span> te disgustan</li>
+                            <li><span>c.</span> prefiere</li>
+                            <li><span>d.</span> prefieres</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>2. Carlos ___ leer novelas históricas.</p>
+                        <ul class="options">
+                            <li><span>a.</span> prefieres</li>
+                            <li data-correct="true"><span>b.</span> prefiere</li>
+                            <li><span>c.</span> prefiero</li>
+                            <li><span>d.</span> preferimos</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>3. A ustedes ___ esperar en la fila.</p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> les disgusta</li>
+                            <li><span>b.</span> les disgustan</li>
+                            <li><span>c.</span> te disgusta</li>
+                            <li><span>d.</span> me disgusta</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>4. Yo ___ estudiar con música.</p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> prefiero</li>
+                            <li><span>b.</span> prefiere</li>
+                            <li><span>c.</span> preferís</li>
+                            <li><span>d.</span> preferimos</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="activity3-page">
+                    <div class="question">
+                        <p>5. A ella no ___ las excusas.</p>
+                        <ul class="options">
+                            <li><span>a.</span> le disgusta</li>
+                            <li data-correct="true"><span>b.</span> le disgustan</li>
+                            <li><span>c.</span> les disgusta</li>
+                            <li><span>d.</span> nos disgustan</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>6. ¿Tú ___ salir o quedarte?</p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> prefieres</li>
+                            <li><span>b.</span> prefiere</li>
+                            <li><span>c.</span> prefiero</li>
+                            <li><span>d.</span> preferimos</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>7. A nosotros ___ la comida picante.</p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> nos disgusta</li>
+                            <li><span>b.</span> nos disgustan</li>
+                            <li><span>c.</span> prefiere</li>
+                            <li><span>d.</span> prefieren</li>
+                        </ul>
+                    </div>
+                    <div class="question">
+                        <p>8. Ellos ___ ver series cortas.</p>
+                        <ul class="options">
+                            <li data-correct="true"><span>a.</span> prefieren</li>
+                            <li><span>b.</span> preferimos</li>
+                            <li><span>c.</span> prefiere</li>
+                            <li><span>d.</span> prefieres</li>
+                        </ul>
+                    </div>
+                </div>
+                <button class="activity3-nav prev" style="display:none;">◀</button>
+                <button class="activity3-nav next">▶</button>
+            </div>
+        </div>
+
+        <!-- Exit Ticket -->
+        <div class="slide" data-duration="540">
+            <h2>Exit Ticket</h2>
+            <p class="instructions">Escribe la forma correcta en cada oración y léelas en voz alta.</p>
+            <div class="exit-ticket-box">
+                <p>1) A mí ____ las películas de terror. (me disgusta / me disgustan)</p>
+                <p>2) Yo ____ practicar por la tarde. (prefiero / prefiere)</p>
+                <p>3) A ellos ____ el ruido fuerte. (les disgusta / les disgustan)</p>
+                <p>4) ¿Tú ____ pizza o pasta? (prefieres / prefiere)</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="timer">00:00</div>
+    <div id="navigation">
+        <button id="prev-btn">⟵ Anterior</button>
+        <button id="next-btn">Siguiente ⟶</button>
+    </div>
+
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" defer></script>
+
+    <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const timerEl = document.getElementById('timer');
+
+        let currentSlide = 0;
+        let timerInterval;
+        let timerRunning = false;
+        let timeRemaining = 0;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let correctSoundBuffer, incorrectSoundBuffer;
+
+        async function loadSound(url) {
+            try {
+                const response = await fetch(url);
+                const arrayBuffer = await response.arrayBuffer();
+                return audioContext.decodeAudioData(arrayBuffer);
+            } catch (e) { return null; }
+        }
+        loadSound('correct.mp3').then(b => correctSoundBuffer = b);
+        loadSound('incorrect.mp3').then(b => incorrectSoundBuffer = b);
+
+        function playSound(buffer) {
+            if (!buffer || audioContext.state === 'suspended') return;
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+        }
+        document.body.addEventListener('click', () => {
+            if (audioContext.state === 'suspended') audioContext.resume();
+        }, { once: true });
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+            currentSlide = index;
+            updateNavButtons();
+            setupTimerForSlide(index);
+        }
+
+        function updateNavButtons() {
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function changeSlide(direction) {
+            const newIndex = currentSlide + direction;
+            if (newIndex >= 0 && newIndex < slides.length) showSlide(newIndex);
+        }
+
+        prevBtn.addEventListener('click', () => changeSlide(-1));
+        nextBtn.addEventListener('click', () => changeSlide(1));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Timer
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+        function setupTimerForSlide(index) {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            const duration = parseInt(slides[index].dataset.duration || '0', 10);
+            timeRemaining = duration;
+            timerEl.textContent = formatTime(duration);
+            timerEl.style.display = duration === 0 ? 'none' : 'block';
+        }
+        function startTimer() {
+            if (timeRemaining <= 0) return;
+            timerRunning = true;
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                timerEl.textContent = formatTime(timeRemaining);
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerRunning = false;
+                    timerEl.textContent = "Time's up!";
+                }
+            }, 1000);
+        }
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+        }
+        timerEl.addEventListener('click', () => {
+            if (audioContext.state === 'suspended') audioContext.resume();
+            if (timerRunning) pauseTimer(); else startTimer();
+        });
+
+        // Concept grid interactions
+        document.querySelectorAll('.toggle-box').forEach(box => {
+            box.addEventListener('click', () => {
+                const initialText = box.dataset.initial;
+                const toggledText = box.dataset.toggled;
+                if (box.textContent === initialText) {
+                    box.textContent = toggledText;
+                    box.classList.add('toggled');
+                } else {
+                    box.textContent = initialText;
+                    box.classList.remove('toggled');
+                }
+            });
+        });
+        document.querySelectorAll('.cycle-box').forEach(box => {
+            box.addEventListener('click', () => {
+                let state = parseInt(box.dataset.state || '0', 10);
+                const texts = JSON.parse(box.dataset.texts || '[]');
+                if (!texts.length) return;
+                state = (state + 1) % texts.length;
+                box.dataset.state = state;
+                box.textContent = texts[state];
+            });
+        });
+
+        // CFU1: dynamic option list per blank
+        const pronounBoxes = document.querySelectorAll('.pronoun-box');
+        const pronounChoices = document.querySelector('.pronoun-choices');
+        let activePronounBox = null;
+
+        pronounBoxes.forEach(box => {
+            box.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (box.classList.contains('disabled')) return;
+                activePronounBox = box;
+
+                // Build choices from data-options if present
+                const opts = JSON.parse(box.getAttribute('data-options') || '[]');
+                pronounChoices.innerHTML = '';
+                (opts.length ? opts : ["mí","mi","té","te","más","mas"]).forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'choice';
+                    div.textContent = opt;
+                    pronounChoices.appendChild(div);
+                });
+
+                const rect = box.getBoundingClientRect();
+                pronounChoices.style.display = 'block';
+                pronounChoices.style.top = `${rect.bottom + window.scrollY}px`;
+                pronounChoices.style.left = `${rect.left + window.scrollX}px`;
+            });
+        });
+        pronounChoices.addEventListener('click', (e) => {
+            if (e.target.classList.contains('choice')) {
+                if (activePronounBox) activePronounBox.textContent = e.target.textContent;
+                pronounChoices.style.display = 'none';
+            }
+        });
+        document.body.addEventListener('click', () => { pronounChoices.style.display = 'none'; });
+
+        document.querySelectorAll('.cfu1-container .sentence-container').forEach(container => {
+            const box = container.querySelector('.pronoun-box');
+            const checkBtn = container.querySelector('.check-btn');
+
+            checkBtn.addEventListener('click', () => {
+                const isCorrect = box.textContent === box.dataset.answer;
+                box.classList.add(isCorrect ? 'correct' : 'incorrect');
+                if (isCorrect) {
+                    playSound(correctSoundBuffer);
+                    if (window.confetti) window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                } else {
+                    playSound(incorrectSoundBuffer);
+                }
+                box.classList.add('disabled');
+                checkBtn.disabled = true;
+            });
+        });
+
+        // Activity 2 quick feedback (tap option turns green/red)
+        document.querySelectorAll('.options li').forEach(li => {
+            li.addEventListener('click', () => {
+                const correct = li.hasAttribute('data-correct');
+                li.classList.add(correct ? 'correct' : 'incorrect');
+                playSound(correct ? correctSoundBuffer : incorrectSoundBuffer);
+                if (correct && window.confetti) window.confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                setTimeout(() => { li.classList.remove('correct','incorrect'); }, 700);
+            });
+        });
+
+        // CFU2 (match)
+        const cfu2Choices = document.querySelectorAll('.cfu2-choice');
+        const cfu2Sentences = document.querySelectorAll('.cfu2-sentence');
+        const cfu2CheckBtn = document.getElementById('cfu2-check-btn');
+        let selectedChoice = null;
+        let selectedSentence = null;
+
+        cfu2Choices.forEach(choice => {
+            choice.addEventListener('click', () => {
+                if (choice.classList.contains('disabled')) return;
+                cfu2Choices.forEach(c => c.classList.remove('selected'));
+                choice.classList.add('selected');
+                selectedChoice = choice;
+                if (selectedSentence) cfu2CheckBtn.disabled = false;
+            });
+        });
+        cfu2Sentences.forEach(sentence => {
+            sentence.addEventListener('click', () => {
+                if (sentence.classList.contains('disabled')) return;
+                cfu2Sentences.forEach(s => s.classList.remove('selected'));
+                sentence.classList.add('selected');
+                selectedSentence = sentence;
+                if (selectedChoice) cfu2CheckBtn.disabled = false;
+            });
+        });
+        cfu2CheckBtn.addEventListener('click', () => {
+            if (!selectedChoice || !selectedSentence) return;
+            const isCorrect = selectedChoice.dataset.answer === selectedSentence.dataset.answer;
+
+            selectedChoice.classList.add(isCorrect ? 'correct' : 'incorrect');
+            selectedSentence.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            if (isCorrect) {
+                playSound(correctSoundBuffer);
+                if (window.confetti) window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } else {
+                playSound(incorrectSoundBuffer);
+                cfu2Choices.forEach(c => {
+                    if (c.dataset.answer === selectedSentence.dataset.answer) c.classList.add('correct');
+                });
+            }
+
+            selectedSentence.classList.add('disabled');
+            cfu2Choices.forEach(c => c.classList.add('disabled'));
+
+            setTimeout(() => {
+                selectedSentence.classList.remove('selected','correct','incorrect');
+                cfu2Choices.forEach(c => c.classList.remove('disabled','correct','incorrect','selected'));
+                cfu2CheckBtn.disabled = true;
+                selectedChoice = null;
+                selectedSentence = null;
+            }, 1200);
+        });
+
+        // Activity 3 carousel nav (visual only; correctness handled on tap above)
+        const activity3Pages = document.querySelectorAll('.activity3-page');
+        const activity3NextBtn = document.querySelector('.activity3-nav.next');
+        const activity3PrevBtn = document.querySelector('.activity3-nav.prev');
+        let activity3CurrentPage = 0;
+
+        function showActivity3Page(index) {
+            activity3Pages.forEach((page, i) => page.classList.toggle('active-page', i === index));
+            activity3CurrentPage = index;
+            activity3NextBtn.style.display = index === activity3Pages.length - 1 ? 'none' : 'block';
+            activity3PrevBtn.style.display = index === 0 ? 'none' : 'block';
+        }
+        activity3NextBtn?.addEventListener('click', () => {
+            if (activity3CurrentPage < activity3Pages.length - 1) showActivity3Page(activity3CurrentPage + 1);
+        });
+        activity3PrevBtn?.addEventListener('click', () => {
+            if (activity3CurrentPage > 0) showActivity3Page(activity3CurrentPage - 1);
+        });
+
+        // Init
+        showSlide(0);
+        showActivity3Page(0);
+    });
+    </script>
+</body>
+</html>
